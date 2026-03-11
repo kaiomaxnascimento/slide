@@ -6,11 +6,12 @@ export default class Slider {
 
   onStart(event) {
     event.preventDefault();
-
     this.wrapper.addEventListener("mousemove", this.onMove);
   }
 
-  onMove(event) {}
+  onMove(event) {
+    console.log('asd');
+  }
 
   onEnd(event) {
     this.wrapper.removeEventListener("mousemove", this.onMove);
