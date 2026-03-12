@@ -19,31 +19,48 @@ export default class Slider {
     return this.dist.finalPosition - this.dist.movement;
   }
 
-  //ao clickar previna padrão, pegue o valor do local clickado
-  //e adicione o evento de mousemove
+  //se mousedown: previna padrão, pegue o valor do local clickado e adicione o evento
+  //se touchstart pegue o valor do local clickado e adicione o evento
   onStart(event) {
-    event.preventDefault();
-    this.dist.startX = event.clientX;
-    this.wrapper.addEventListener("mousemove", this.onMove);
+    let movetype;
+    if (event.type === "mousedown") {
+      event.preventDefault();
+      this.dist.startX = event.clientX;
+      movetype = "mousemove";
+    } else {
+      this.dist.startX = event.changedTouches[0].clientX;
+      movetype = "touchmove";
+    }
+    this.wrapper.addEventListener(movetype, this.onMove);
   }
 
-  //ao mover o mouse acione o evento updatePosition dentro de moveSlide
+  //se mousemove adicione o event.clientX no updatePosition()
+  //se touchmove adicione o clientX do touch no updatePosition()
+  //e ative o moveSlider com o valor do updatePosition()
+  //o updatePosition() retorna a posicao do clientX do slider
   onMove(event) {
-    const finalPosition = this.updatePosition(event.clientX);
+    const pointerPosition =
+      event.type === "mousemove"
+        ? event.clientX
+        : event.changedTouches[0].clientX;
+    const finalPosition = this.updatePosition(pointerPosition);
     this.moveSlide(finalPosition);
   }
 
-  //ao soltar o click do mouse remove o evento de mousemove
-  //e salva o valor do finalPosition que recebe o valor de onde esta o slider
+  //se soltar o click do mouse remove o evento de mousemove
+  //se touchEnd remove o evento de touchmove
   onEnd(event) {
-    this.wrapper.removeEventListener("mousemove", this.onMove);
+    const movetype = event.type === "mouseup" ? "mousemove" : "tochmove";
+    this.wrapper.removeEventListener(movetype, this.onMove);
     this.dist.finalPosition = this.dist.movePosition;
   }
 
   //adicionado eventos
   addSliderEvents() {
     this.wrapper.addEventListener("mousedown", this.onStart);
+    this.wrapper.addEventListener("touchstart", this.onStart);
     this.wrapper.addEventListener("mouseup", this.onEnd);
+    this.wrapper.addEventListener("touchend", this.onEnd);
   }
 
   //bind para não perder referencia ao adicionar eventos
