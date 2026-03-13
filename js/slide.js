@@ -1,8 +1,13 @@
-export default class Slider {
+export default class Slide {
   constructor(slide, wrapper) {
     this.slide = document.querySelector(slide);
     this.wrapper = document.querySelector(wrapper);
     this.dist = { finalPosition: 0, startX: 0, movement: 0 };
+  }
+
+  //ativa a transição lenta usado quando soltar o click
+  transition(active) {
+    this.slide.style.transition = active ? "transform .3s" : "";
   }
 
   //pega a posição inicial do slider e altera o valor
@@ -32,6 +37,7 @@ export default class Slider {
       movetype = "touchmove";
     }
     this.wrapper.addEventListener(movetype, this.onMove);
+    this.transition(false);
   }
 
   //se mousemove adicione o event.clientX no updatePosition()
@@ -53,10 +59,25 @@ export default class Slider {
     const movetype = event.type === "mouseup" ? "mousemove" : "tochmove";
     this.wrapper.removeEventListener(movetype, this.onMove);
     this.dist.finalPosition = this.dist.movePosition;
+    this.transition(true);
+    this.changeSlideOnEnd();
+  }
+
+  //se o movimento for para esquerda ou direita ative as funcoes
+  //activeNextSlide e activePrevSlide e se o proximo ou o anterior
+  //for undefined retorne o que tiver ativo atualmente
+  changeSlideOnEnd() {
+    if (this.dist.movement > 120 && this.index.next !== undefined) {
+      this.activeNextSlide();
+    } else if (this.dist.movement < -120 && this.index.prev !== undefined) {
+      this.activePrevSlide();
+    } else {
+      this.changeSlide(this.index.active);
+    }
   }
 
   //adicionado eventos
-  addSliderEvents() {
+  addSlideEvents() {
     this.wrapper.addEventListener("mousedown", this.onStart);
     this.wrapper.addEventListener("touchstart", this.onStart);
     this.wrapper.addEventListener("mouseup", this.onEnd);
@@ -70,18 +91,24 @@ export default class Slider {
     this.onMove = this.onMove.bind(this);
   }
 
-  sliderPosition(slide) {
+  //calculo para o elemento ficar centralizado
+  //relacionando o tamanho da tela e do elemento
+  slidePosition(slide) {
     const margin = (this.wrapper.offsetWidth - slide.offsetWidth) / 2;
     return -(slide.offsetLeft - margin);
   }
 
+  //passo por todos os elementos do slider e coloco em um objeto
+  //com a posição calculada para ficar no centro e o elemento
   slidesConfig() {
     this.slideArray = [...this.slide.children].map((element) => {
-      const position = this.sliderPosition(element);
+      const position = this.slidePosition(element);
       return { position, element };
     });
   }
 
+  //pego o slider atual o anterior e o proximo
+  //e coloco em um objeto para manipular
   slidesIndexNav(index) {
     const last = this.slideArray.length - 1;
     this.index = {
@@ -91,6 +118,8 @@ export default class Slider {
     };
   }
 
+  //pego o index do slider e atribuo ao slidesIndexNav
+  //pega a posicao que ta o slider e salva na posicao final
   changeSlide(index) {
     const activeSlide = this.slideArray[index];
     this.moveSlide(activeSlide.position);
@@ -98,9 +127,19 @@ export default class Slider {
     this.dist.finalPosition = activeSlide.position;
   }
 
+  //se for pro anterior e não for undefined passe para o anterior
+  activePrevSlide() {
+    if (this.index.prev !== undefined) this.changeSlide(this.index.prev);
+  }
+
+  //se for pro proximo e não for undefined passe para o proximo
+  activeNextSlide() {
+    if (this.index.next !== undefined) this.changeSlide(this.index.next);
+  }
+
   init() {
     this.bindEvents();
-    this.addSliderEvents();
+    this.addSlideEvents();
     this.slidesConfig();
     return this;
   }
