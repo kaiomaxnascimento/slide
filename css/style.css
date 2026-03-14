@@ -43,3 +43,18 @@ img {
   opacity: 1;
   transform: scale(1);
 }
+
+.arrow-nav {
+  background-color: tomato;
+  display: flex;
+  justify-content: space-around;
+  margin-top: 1rem;
+}
+
+.prev {
+  padding: 1rem 1.5rem;
+}
+
+.next {
+  padding: 1rem 1.5rem;
+}
